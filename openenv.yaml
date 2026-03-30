@@ -1,10 +1,10 @@
+---
 name: support-triage
 version: "1.0.0"
 description: >
   Customer support ticket triage environment. An AI agent reads incoming
   support tickets, classifies their category and urgency, assigns to the
-  correct team, and drafts an initial response. Mirrors real operations
-  center workflows used by SaaS companies.
+  correct team, and optionally drafts a reply. Mirrors real SaaS ops workflows.
 author: openenv-support-triage
 tags:
   - openenv
@@ -15,20 +15,37 @@ tags:
 
 observation_space:
   type: object
-  description: Current ticket visible to the agent
-  fields:
-    ticket_id: string
-    subject: string
-    body: string
-    sender_email: string
-    created_at: string
-    attachments: list[string]
-    history: list[object]
+  properties:
+    ticket_id:
+      type: string
+    subject:
+      type: string
+    body:
+      type: string
+    sender_email:
+      type: string
+    created_at:
+      type: string
+    attachments:
+      type: array
+      items:
+        type: string
+    history:
+      type: array
+      items:
+        type: object
+    step_number:
+      type: integer
+    task_id:
+      type: string
+    tickets_remaining:
+      type: integer
+    tickets_completed:
+      type: integer
 
 action_space:
   type: object
-  description: Agent action — triage decision + optional reply draft
-  fields:
+  properties:
     category:
       type: string
       enum: [billing, technical, account, feature_request, abuse, general]
@@ -40,11 +57,47 @@ action_space:
       enum: [billing_team, technical_team, account_team, trust_safety, product_team, general_support]
     draft_reply:
       type: string
-      description: The draft reply to send to the customer (optional but scored)
+      nullable: true
     needs_escalation:
       type: boolean
     tags:
-      type: list[string]
+      type: array
+      items:
+        type: string
+  required:
+    - category
+    - urgency
+    - assign_to
+
+reward_space:
+  type: object
+  properties:
+    total:
+      type: number
+      minimum: 0.0
+      maximum: 1.0
+    category_score:
+      type: number
+      minimum: 0.0
+      maximum: 1.0
+    urgency_score:
+      type: number
+      minimum: 0.0
+      maximum: 1.0
+    routing_score:
+      type: number
+      minimum: 0.0
+      maximum: 1.0
+    escalation_score:
+      type: number
+      minimum: 0.0
+      maximum: 1.0
+    reply_score:
+      type: number
+      minimum: 0.0
+      maximum: 1.0
+    feedback:
+      type: string
 
 tasks:
   - id: task_easy
@@ -69,18 +122,18 @@ tasks:
     name: "Crisis Triage with Reply Drafting"
     difficulty: hard
     description: >
-      Handle 5 complex tickets including potential abuse reports, multi-issue
-      tickets, and angry customers. Must triage correctly AND draft appropriate
-      professional replies. Quality of reply is scored.
+      Handle 5 complex tickets including abuse reports, multi-issue tickets,
+      and angry customers. Must triage correctly AND draft appropriate replies.
     max_steps: 20
     passing_score: 0.5
 
 endpoints:
-  reset: POST /reset
-  step: POST /step
-  state: GET /state
-  health: GET /health
+  reset: "POST /reset"
+  step: "POST /step"
+  state: "GET /state"
+  health: "GET /health"
 
 runtime:
   python: "3.11"
   framework: fastapi
+  port: 7860
