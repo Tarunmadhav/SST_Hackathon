@@ -1,0 +1,86 @@
+name: support-triage
+version: "1.0.0"
+description: >
+  Customer support ticket triage environment. An AI agent reads incoming
+  support tickets, classifies their category and urgency, assigns to the
+  correct team, and drafts an initial response. Mirrors real operations
+  center workflows used by SaaS companies.
+author: openenv-support-triage
+tags:
+  - openenv
+  - customer-support
+  - nlp
+  - triage
+  - real-world
+
+observation_space:
+  type: object
+  description: Current ticket visible to the agent
+  fields:
+    ticket_id: string
+    subject: string
+    body: string
+    sender_email: string
+    created_at: string
+    attachments: list[string]
+    history: list[object]
+
+action_space:
+  type: object
+  description: Agent action — triage decision + optional reply draft
+  fields:
+    category:
+      type: string
+      enum: [billing, technical, account, feature_request, abuse, general]
+    urgency:
+      type: string
+      enum: [critical, high, medium, low]
+    assign_to:
+      type: string
+      enum: [billing_team, technical_team, account_team, trust_safety, product_team, general_support]
+    draft_reply:
+      type: string
+      description: The draft reply to send to the customer (optional but scored)
+    needs_escalation:
+      type: boolean
+    tags:
+      type: list[string]
+
+tasks:
+  - id: task_easy
+    name: "Basic Ticket Classification"
+    difficulty: easy
+    description: >
+      Classify 5 straightforward tickets into correct categories and urgency levels.
+      Tickets have clear, unambiguous signals.
+    max_steps: 10
+    passing_score: 0.7
+
+  - id: task_medium
+    name: "Triage with Partial Information"
+    difficulty: medium
+    description: >
+      Handle 5 tickets with ambiguous signals. Agent must infer context from
+      limited information and correctly route to specialized teams.
+    max_steps: 15
+    passing_score: 0.6
+
+  - id: task_hard
+    name: "Crisis Triage with Reply Drafting"
+    difficulty: hard
+    description: >
+      Handle 5 complex tickets including potential abuse reports, multi-issue
+      tickets, and angry customers. Must triage correctly AND draft appropriate
+      professional replies. Quality of reply is scored.
+    max_steps: 20
+    passing_score: 0.5
+
+endpoints:
+  reset: POST /reset
+  step: POST /step
+  state: GET /state
+  health: GET /health
+
+runtime:
+  python: "3.11"
+  framework: fastapi

@@ -1,13 +1,25 @@
 ---
-title: SST Hackathon
-emoji: 📉
-colorFrom: purple
-colorTo: green
-sdk: gradio
-sdk_version: 6.10.0
-app_file: app.py
+title: Support Triage OpenEnv
+emoji: 🎫
+colorFrom: blue
+colorTo: indigo
+sdk: docker
 pinned: false
-short_description: Meta AI hackathon
+tags:
+  - openenv
+license: mit
 ---
+```
 
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+**3. Copy all the project files into the cloned folder**
+
+Copy everything from the `openenv-support-triage` project I built:
+```
+Dockerfile
+requirements.txt
+inference.py
+openenv.yaml
+app/
+tasks/
+tests/
+scripts/
