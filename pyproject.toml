@@ -1,7 +1,7 @@
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.backends.legacy:build"
- 
+
 [project]
 name = "support-triage-openenv"
 version = "1.0.0"
@@ -13,22 +13,25 @@ dependencies = [
     "fastapi==0.115.5",
     "uvicorn[standard]==0.32.1",
     "pydantic==2.9.2",
-    "openai==1.54.4",
+    "openai>=2.7.2",
     "requests==2.32.3",
     "python-multipart==0.0.17",
+    "openenv-core>=0.2.0",
 ]
- 
+
+[project.scripts]
+server = "server.app:main"
+
 [project.optional-dependencies]
 dev = ["pytest", "httpx"]
- 
+
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["app*", "tasks*"]
- 
+include = ["app*", "tasks*", "server*"]
+
 [openenv]
 name = "support-triage"
 version = "1.0.0"
 spec = "openenv.yaml"
 entrypoint = "app.main:app"
 port = 7860
- 
