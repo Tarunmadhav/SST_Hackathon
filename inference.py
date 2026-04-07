@@ -164,9 +164,8 @@ def call_llm(ticket_obs: Dict[str, Any]) -> Dict[str, Any]:
 
 def run_task(task_id: str) -> Dict[str, Any]:
     """Run the agent on one task. Returns summary dict."""
-    print(f"\n{'='*60}")
-    print(f"  Task: {task_id}")
-    print(f"{'='*60}")
+    # Structured output for validator
+    print(f"[START] task={task_id}", flush=True)
 
     reset_result = env_reset(task_id)
     obs = reset_result["observation"]
@@ -177,7 +176,7 @@ def run_task(task_id: str) -> Dict[str, Any]:
 
     while obs is not None:
         step_num += 1
-        print(f"\n  [{step_num}/{total_tickets}] Ticket: {obs['ticket_id']}")
+        print(f"  [{step_num}/{total_tickets}] Ticket: {obs['ticket_id']}")
         print(f"  Subject: {obs['subject'][:80]}")
 
         # Agent decision
@@ -190,7 +189,8 @@ def run_task(task_id: str) -> Dict[str, Any]:
         reward = step_result["reward"]
         ticket_scores.append(reward["total"])
 
-        print(f"  Score: {reward['total']:.3f}  |  {reward['feedback']}")
+        # Structured step output for validator
+        print(f"[STEP] step={step_num} reward={reward['total']:.4f} feedback=\"{reward['feedback'][:50]}\"", flush=True)
 
         if step_result["done"]:
             obs = None
@@ -202,9 +202,11 @@ def run_task(task_id: str) -> Dict[str, Any]:
     final_state = env_state()
     task_score = final_state["task_score"]
 
-    print(f"\n  ── Task complete ──────────────────────────────")
-    print(f"  Per-ticket scores: {[round(s, 3) for s in ticket_scores]}")
+    print(f"\n  Per-ticket scores: {[round(s, 3) for s in ticket_scores]}")
     print(f"  Task score:        {task_score:.4f}")
+
+    # Structured end output for validator
+    print(f"[END] task={task_id} score={task_score:.4f} steps={step_num}", flush=True)
 
     return {
         "task_id": task_id,
